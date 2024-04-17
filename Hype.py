@@ -1,0 +1,4 @@
+BATCHSIZE = 4
+EPOCHS = 50
+lr = 0.01
+CLASSES = 11
