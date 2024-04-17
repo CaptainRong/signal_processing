@@ -28,9 +28,8 @@ class FCNModel(nn.Module):
         self.name = 'FCNModel'
 
     def forward(self, x):
-        input_size = x.shape[1]*x.shape[2]
-        x = x.resize(-1, input_size)
-        print(x.shape)
+        x = x.view(x.size(0), -1)
+        # print(x.shape)
         x = self.relu(self.fc1(x))
         # print(x.shape)
         x = self.relu(self.fc2(x))
@@ -38,6 +37,7 @@ class FCNModel(nn.Module):
         x = self.relu(self.fc3(x))
         # print(x.shape)
         x = self.relu(self.fc4(x))
+        x = self.fc5(x)
         # print(x.shape)
         return x
 
@@ -105,33 +105,38 @@ class RNN_model(nn.Module):
 
 
 class RNN(nn.Module):
-    def __init__(self, input_size, classes):
+    def __init__(self, input_size, classes, hidden_size=64, num_layers=20):
         super(RNN, self).__init__()
-        hidden_size=128
-        num_layers = 2
+        self.classes = classes
+        self.input_size = input_size
+        self.num_layers = num_layers
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, classes)
+        self.rnn = nn.RNN(self.input_size, self.hidden_size, self.num_layers, batch_first=True)
+        self.fc = nn.Linear(self.hidden_size, self.classes)
+        self.relu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
         self.name = 'RNN'
 
     def forward(self, x):
+        # x.shape should be (batchsize, features, time_length)
         # 初始化隐藏状态
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
 
+        x = x.view(x.size(0), -1, x.size(1))
+        # print(x.shape)
         # 前向传播RNN
-        out, _ = self.rnn(x, h0)
-
+        x, _ = self.rnn(x, h0)
         # 取最后一个时间步的输出
-        out = self.fc(out[:, -1, :])
-        return out
+        x = self.fc(x[:, -1, :])
+        # print(x.shape)
+        # x = self.softmax(x)
+        return x
+
 
 if __name__ == '__main__':
-    model = FCNModel(input_size=16000, classes=11)
-    x = torch.randn(128, 16000)
-    model.forward(x)
 
-    inputs = torch.randn(128, 48, 40)
-    model = RNN_model(classes=11)
-    output, (_, _) = model.forward(inputs)
-    print(output.shape)
+    inputs = torch.randn(BATCHSIZE, 16000, 1)
+    model = RNN(16000, 11)
+    output = model.forward(inputs)
+    print(output)

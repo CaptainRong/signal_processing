@@ -14,27 +14,13 @@ from model import FCNModel, RNN_model, RNN
 
 if __name__ == '__main__':
     device = torch.device('cuda')
-    TrainDataLoader, TestDataLoader = create_datasets(root_path='test/')
+    TrainDataLoader, TestDataLoader = create_datasets(root_path='wav/')
 
     # 构建模型
     model = FCNModel(input_size=16000, classes=CLASSES).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-6, nesterov=True)
 
-    # [编译模型] 配置模型，损失函数采用交叉熵，优化采用Adadelta，将识别准确率作为模型评估
-
-    # callback_earlyStop = callbacks.EarlyStopping(monitor='loss', min_delta=0.001, patience=100, mode='auto',
-    #                                              restore_best_weights=False)
-    # save_dir = f'model/RNN_weights_-bs{BATCHSIZE}-eps{EPOCHS}-lr{lr}'
-    # callback_chkpoint = callbacks.ModelCheckpoint(filepath=os.path.join(save_dir, 'model_{epoch:04d}.keras'),
-    #                                               monitor='val_loss',
-    #                                               save_freq='epoch',
-    #                                               verbose=0,
-    #                                               save_best_only=True,
-    #                                               save_weights_only=False, mode='auto')
-    # history = model.fit(wavs, labels, batch_size=BATCHSIZE, epochs=EPOCHS,
-    #                     callbacks=[callback_chkpoint, callback_earlyStop], verbose=1,
-    #                     validation_data=(testwavs, testlabels), )
     LossRate = 0
     CorrectTimes = 0
     Total = 0
