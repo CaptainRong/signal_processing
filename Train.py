@@ -14,12 +14,13 @@ from model import FCNModel, RNN_model, RNN
 
 if __name__ == '__main__':
     device = torch.device('cuda')
-    TrainDataLoader, TestDataLoader = create_datasets(root_path='wav/')
+    TrainDataLoader, TestDataLoader = create_datasets(root_path='test/')
 
     # 构建模型
-    model = FCNModel(input_size=16000, classes=CLASSES).to(device)
+    # FCN: input_size = time_length*features else = features
+    model = RNN(input_size=32, classes=CLASSES).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-6, nesterov=True)
+    optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
     LossRate = 0
     CorrectTimes = 0
@@ -29,11 +30,9 @@ if __name__ == '__main__':
         Total = 0
         CorrectTimes = 0
         for BatchTimes, batch in enumerate(TrainDataLoader):
-            wavs = batch['input']
+            wavs = batch['input'].to(device)
             # print(wavs.shape)
-            labels = batch['label']
-            wavs = wavs.to(device)
-            labels = labels.to(device)
+            labels = batch['label'].to(device)
 
             optimizer.zero_grad(),
             outputs = model(wavs)
@@ -51,7 +50,7 @@ if __name__ == '__main__':
             # if BatchTimes % 100 == 0 or BatchTimes == (len(TrainDataLoader) - 1):
             #     print(epoch, BatchTimes, len(TrainDataLoader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             #           % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total, CorrectTimes, Total))
-        print(epoch, 'Loss: %.3f | Acc: %.3f%% (%d/%d)' % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total,
+        print(epoch, '(Train) :Loss: %.3f | Acc: %.3f%% (%d/%d)' % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total,
                                                            CorrectTimes, Total))
 
         test_loss = 0
@@ -59,17 +58,17 @@ if __name__ == '__main__':
         test_total = 0
         with torch.no_grad():
             for BatchTimes, batch in enumerate(TestDataLoader):
-                testwavs = batch['input']
-                testlabels = batch['label']
-                testwavs = testwavs.to(device)
-                testlabels = testlabels.to(device)
+                testwavs = batch['input'].to(device)
+                testlabels = batch['label'].to(device)
+
                 outputs = model(testwavs)
                 loss = criterion(outputs, testlabels)
                 test_loss += loss.item()
                 _, predicted = outputs.max(1)
+                print(f"{predicted[0:5]}\n{testlabels.argmax(dim=1).view(-1, 1)[0:5]}")
                 test_total += testlabels.size(0)
                 TP += torch.all(torch.eq(predicted.view(-1, 1), testlabels.argmax(dim=1).view(-1, 1)), dim=1).sum().item()
-            print(epoch, 'Loss:%.3f | Access:%.3f%%(%d/%d)'% (test_loss / (BatchTimes + 1), 100. * TP / test_total,
+            print(epoch, '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)'% (test_loss / (BatchTimes + 1), 100. * TP / test_total,
                                                               TP, test_total))
         if epoch % 20 == 0:
             torch.save(model.state_dict(), f'model/{model.name}-{epoch}-acc{100 * TP / test_total:0.4f}.pth')

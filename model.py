@@ -1,3 +1,5 @@
+import random
+
 from Hype import *
 import torch
 import torch.nn as nn
@@ -59,10 +61,10 @@ class FCNModel(nn.Module):
 
 
 class RNN_model(nn.Module):
-    def __init__(self, input_size, classes=CLASSES):
+    def __init__(self, input_size, classes=CLASSES, hidden_size=128, num_layer=32):
         super(RNN_model, self).__init__()
-        self.hidden_size = 128
-        self.LSTM = nn.LSTM(input_size=8, hidden_size=self.hidden_size, num_layers=2, batch_first=True)
+        self.hidden_size = hidden_size
+        self.LSTM = nn.LSTM(input_size=input_size, hidden_size=self.hidden_size, num_layers=num_layer, batch_first=True)
         self.linear1 = nn.Linear(16000, 10240)
         self.relu = nn.ReLU()
         self.linear2 = nn.Linear(10240, 4096)
@@ -74,8 +76,7 @@ class RNN_model(nn.Module):
         self.name = 'RNN_model'
 
     def forward(self, x):
-        bth = x.shape[0]
-        x = x.view(bth, -1)
+        x = x.view(x.size(0), -1)
         x = self.linear1(x)
         x = self.relu(x)
         x = self.linear2(x)
@@ -105,30 +106,36 @@ class RNN_model(nn.Module):
 
 
 class RNN(nn.Module):
-    def __init__(self, input_size, classes, hidden_size=64, num_layers=20):
+    def __init__(self, input_size, classes, hidden_size=64, num_layers=2):
         super(RNN, self).__init__()
         self.classes = classes
         self.input_size = input_size
         self.num_layers = num_layers
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.rnn = nn.RNN(self.input_size, self.hidden_size, self.num_layers, batch_first=True)
+
+        self.rnn = nn.RNN(input_size=self.input_size, hidden_size=hidden_size,
+                          num_layers=self.num_layers, batch_first=True, nonlinearity='tanh')
         self.fc = nn.Linear(self.hidden_size, self.classes)
         self.relu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
         self.name = 'RNN'
 
     def forward(self, x):
-        # x.shape should be (batchsize, features, time_length)
-        # 初始化隐藏状态
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-
-        x = x.view(x.size(0), -1, x.size(1))
+        # x.shape should be (batchsize, time_length, features)
+        x = x.permute(0, 2, 1)
         # print(x.shape)
+        # 初始化隐藏状态
+        h0 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = nn.init.xavier_uniform_(h0)
         # 前向传播RNN
         x, _ = self.rnn(x, h0)
         # 取最后一个时间步的输出
+        # print(x[:, -1, :])
+        # print(x[:, -2, :])
+        # print(x.shape)
         x = self.fc(x[:, -1, :])
+        # print(x)
         # print(x.shape)
         # x = self.softmax(x)
         return x
@@ -136,7 +143,7 @@ class RNN(nn.Module):
 
 if __name__ == '__main__':
 
-    inputs = torch.randn(BATCHSIZE, 16000, 1)
-    model = RNN(16000, 11)
+    inputs = torch.randn(BATCHSIZE, 32, 44)
+    model = RNN(32, 11)
     output = model.forward(inputs)
     print(output)

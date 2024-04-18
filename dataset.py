@@ -28,7 +28,7 @@ def create_datasets(root_path):
         files = os.listdir(path)
         for file in files:
             # print(file)
-            waveData = get_wav_mfcc(path + file)
+            waveData = librosa_get_wav_mfcc(path + file)
             # print(waveData)
             wavs.append(waveData)
             if not (cls in labsInd):
@@ -47,7 +47,7 @@ def create_datasets(root_path):
             files = os.listdir(path)
             for file in files:
                 # print(file)
-                waveData = get_wav_mfcc(path + file)
+                waveData = librosa_get_wav_mfcc(path + file)
                 testwavs.append(waveData)
                 if not (cls in testlabsInd):
                     # print(cls)
