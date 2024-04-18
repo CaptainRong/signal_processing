@@ -1,6 +1,3 @@
-'''
-使用案例，训练两个类型的语音，然后测试，对CPU和内存要求不高。内存使用在 1G 左右
-'''
 
 import os
 import torch
@@ -14,11 +11,11 @@ from model import FCNModel, RNN_model, RNN
 
 if __name__ == '__main__':
     device = torch.device('cuda')
-    TrainDataLoader, TestDataLoader = create_datasets(root_path='test/')
+    TrainDataLoader, TestDataLoader = create_datasets(root_path='wav/')
 
     # 构建模型
     # FCN: input_size = time_length*features else = features
-    model = RNN(input_size=32, classes=CLASSES).to(device)
+    model = FCNModel(input_size=32*44, classes=CLASSES).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
@@ -40,7 +37,7 @@ if __name__ == '__main__':
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()  # targets为真实结果
-
+            # print(f"{predicted[0:5]}\n{testlabels.argmax(dim=1).view(-1, 1)[0:5]}")
             LossRate += loss.item()
             a, predicted = outputs.max(1)
             # print(predicted, labels)
@@ -65,7 +62,7 @@ if __name__ == '__main__':
                 loss = criterion(outputs, testlabels)
                 test_loss += loss.item()
                 _, predicted = outputs.max(1)
-                print(f"{predicted[0:5]}\n{testlabels.argmax(dim=1).view(-1, 1)[0:5]}")
+                print(f"{predicted[0:2]}\n{testlabels.argmax(dim=1).view(-1, 1)[0]}")
                 test_total += testlabels.size(0)
                 TP += torch.all(torch.eq(predicted.view(-1, 1), testlabels.argmax(dim=1).view(-1, 1)), dim=1).sum().item()
             print(epoch, '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)'% (test_loss / (BatchTimes + 1), 100. * TP / test_total,

@@ -75,14 +75,14 @@ def librosa_get_wav_mfcc(wav_path):
     x, sr = librosa.load(wav_path)
     mfccs = librosa.feature.mfcc(y=x, sr=sr, n_mfcc=32)
     norm = np.linalg.norm(mfccs)
-    mfccs /= norm # 归一
+    # mfccs /= norm # 归一
     padding = [(0, 0),  # 在第一维度上扩张
                (0, 44 - mfccs.shape[1])]  # 在第二维度上扩张
 
     # 对矩阵进行扩张
     mfccs = np.pad(mfccs, padding, mode='constant', constant_values=0)
 
-    mfccs = np.abs(mfccs)
+    # mfccs = np.abs(mfccs)
     # print(mfccs.shape) (32->features, 44->time_length)
     return mfccs
     print(wav_path, mfccs, mfccs.shape)
@@ -91,8 +91,9 @@ def librosa_get_wav_mfcc(wav_path):
 if __name__ == "__main__":
     pth1 = "wav/train/eight/2353.wav"
     pth2 = "wav/train/nine/0000.wav"
-    data1 = get_wav_mfcc(pth1)
-    data2 = get_wav_mfcc(pth2)
+    data1 = librosa_get_wav_mfcc(pth1)
+    data2 = librosa_get_wav_mfcc(pth2)
+    print(data1.shape)
     dist = np.linalg.norm(data1 - data2)
     print(data1)
     print(data2)
