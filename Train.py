@@ -1,21 +1,22 @@
-
-import os
-import torch
-import torch.nn as nn
-import torch.optim as optim
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-from dataset import create_datasets
-# from keras import callbacks
 from Hype import *
 from model import FCNModel, RNN_model, RNN
+from dataset import create_datasets
+import os
+import torch.nn as nn
+import torch.optim as optim
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+
+# from keras import callbacks
+
 
 if __name__ == '__main__':
-    device = torch.device('cuda')
     TrainDataLoader, TestDataLoader = create_datasets(root_path='wav/')
 
     # 构建模型
     # FCN: input_size = time_length*features else = features
-    model = FCNModel(input_size=32*44, classes=CLASSES).to(device)
+    model = FCNModel(input_size=32 * 44, classes=CLASSES).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
 
@@ -42,13 +43,15 @@ if __name__ == '__main__':
             a, predicted = outputs.max(1)
             # print(predicted, labels)
             Total += labels.size(0)
-            CorrectTimes += torch.all(torch.eq(predicted.view(-1, 1), labels.argmax(dim=1).view(-1, 1)), dim=1).sum().item()
+            CorrectTimes += torch.all(torch.eq(predicted.view(-1, 1), labels.argmax(dim=1).view(-1, 1)),
+                                      dim=1).sum().item()
 
             # if BatchTimes % 100 == 0 or BatchTimes == (len(TrainDataLoader) - 1):
             #     print(epoch, BatchTimes, len(TrainDataLoader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             #           % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total, CorrectTimes, Total))
-        print(epoch, '(Train) :Loss: %.3f | Acc: %.3f%% (%d/%d)' % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total,
-                                                           CorrectTimes, Total))
+        print(epoch,
+              '(Train) :Loss: %.3f | Acc: %.3f%% (%d/%d)' % (LossRate / (BatchTimes + 1), 100. * CorrectTimes / Total,
+                                                             CorrectTimes, Total))
 
         test_loss = 0
         TP = 0
@@ -64,9 +67,11 @@ if __name__ == '__main__':
                 _, predicted = outputs.max(1)
                 # print(f"{predicted[0:2]}\n{testlabels.argmax(dim=1).view(-1, 1)[0]}")
                 test_total += testlabels.size(0)
-                TP += torch.all(torch.eq(predicted.view(-1, 1), testlabels.argmax(dim=1).view(-1, 1)), dim=1).sum().item()
-            print(epoch, '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)'% (test_loss / (BatchTimes + 1), 100. * TP / test_total,
-                                                              TP, test_total))
+                TP += torch.all(torch.eq(predicted.view(-1, 1), testlabels.argmax(dim=1).view(-1, 1)),
+                                dim=1).sum().item()
+            print(epoch,
+                  '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)' % (test_loss / (BatchTimes + 1), 100. * TP / test_total,
+                                                                TP, test_total))
         if epoch % 20 == 0:
             torch.save(model.state_dict(), f'model/{model.name}-{epoch}-acc{100 * TP / test_total:0.4f}.pth')
 
