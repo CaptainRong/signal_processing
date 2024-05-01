@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 loss = criterion(outputs, testlabels)
                 test_loss += loss.item()
                 _, predicted = outputs.max(1)
-                print(f"{predicted[0:2]}\n{testlabels.argmax(dim=1).view(-1, 1)[0]}")
+                # print(f"{predicted[0:2]}\n{testlabels.argmax(dim=1).view(-1, 1)[0]}")
                 test_total += testlabels.size(0)
                 TP += torch.all(torch.eq(predicted.view(-1, 1), testlabels.argmax(dim=1).view(-1, 1)), dim=1).sum().item()
             print(epoch, '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)'% (test_loss / (BatchTimes + 1), 100. * TP / test_total,

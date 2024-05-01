@@ -7,7 +7,7 @@ import librosa
 import librosa.feature
 
 
-def dataset_chk(classes, root_path, rate: float = 0):
+def dataset_chk(root_path, rate: float = 0):
     # for dir in os.listdir(root_path):
     #     path = os.path.join(root_path, dir)
     #     # print(1, path)
@@ -26,6 +26,8 @@ def dataset_chk(classes, root_path, rate: float = 0):
     #             os.rename(os.path.join(pth, data), os.path.join(pth, name))
     #             # print(3, name)
     #         print(f'cls {cls} chk finished.')
+    classes = os.listdir(root_path + 'train/')
+    print('All classes are as follows:\n', classes)
     test_cls = os.listdir(root_path + "test/")
     for cls in classes:
         if cls not in test_cls:
@@ -89,13 +91,5 @@ def librosa_get_wav_mfcc(wav_path):
 
 
 if __name__ == "__main__":
-    pth1 = "wav/train/eight/2353.wav"
-    pth2 = "wav/train/nine/0000.wav"
-    data1 = librosa_get_wav_mfcc(pth1)
-    data2 = librosa_get_wav_mfcc(pth2)
-    print(data1.shape)
-    dist = np.linalg.norm(data1 - data2)
-    print(data1)
-    print(data2)
-    print(dist)
+    dataset_chk(root_path='wav/', rate=0.3)
     # print(data1.shape)

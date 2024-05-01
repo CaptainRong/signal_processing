@@ -106,7 +106,7 @@ class RNN_model(nn.Module):
 
 
 class RNN(nn.Module):
-    def __init__(self, input_size, classes, hidden_size=128, num_layers=1):
+    def __init__(self, input_size, classes, hidden_size=512, num_layers=4):
         super(RNN, self).__init__()
         self.classes = classes
         self.input_size = input_size
