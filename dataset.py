@@ -79,4 +79,3 @@ if __name__ == '__main__':
     TrainDataLoader, TestDataLoader = create_datasets('wav/')
     print(TrainDataLoader.batch_size)
     print(TestDataLoader.dataset)
-

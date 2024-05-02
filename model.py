@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+
 # def create_model(classes):
 #     model = RNN_model(classes)
 #     # [编译模型] 配置模型，损失函数采用交叉熵，优化采用Adadelta，将识别准确率作为模型评估
@@ -68,11 +69,11 @@ class RNN_model(nn.Module):
         self.linear1 = nn.Linear(16000, 10240)
         self.relu = nn.ReLU()
         self.linear2 = nn.Linear(10240, 4096)
-        self.conv1 = nn.Conv1d(128, 64, 5)  #508, 128
-        self.maxpool1 = nn.MaxPool1d(2, 2) # 254
-        self.conv2 = nn.Conv1d(64, 32, 3) # 252
+        self.conv1 = nn.Conv1d(128, 64, 5)  # 508, 128
+        self.maxpool1 = nn.MaxPool1d(2, 2)  # 254
+        self.conv2 = nn.Conv1d(64, 32, 3)  # 252
         self.maxpool2 = nn.MaxPool1d(2, 5)  # 50
-        self.linear3 = nn.Linear(32*51, classes)
+        self.linear3 = nn.Linear(32 * 51, classes)
         self.name = 'RNN_model'
 
     def forward(self, x):
@@ -83,7 +84,7 @@ class RNN_model(nn.Module):
         x = self.relu(x)
         x = x.view(bth, 512, 8)
         # print(x.shape)
-        x, (ht,ct) = self.LSTM(x) # length*hidden 512, 128
+        x, (ht, ct) = self.LSTM(x)  # length*hidden 512, 128
         # print(x.shape)
         x = x.permute(0, 2, 1)
 
@@ -142,7 +143,6 @@ class RNN(nn.Module):
 
 
 if __name__ == '__main__':
-
     inputs = torch.randn(BATCHSIZE, 32, 44)
     model = RNN(32, 11)
     output = model.forward(inputs)
