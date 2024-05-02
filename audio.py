@@ -27,12 +27,16 @@ def get_mfcc(audio_data):
 
     # 对矩阵进行扩张
     mfccs = np.pad(mfccs, padding, mode='constant', constant_values=0)
+    mfccs = torch.FloatTensor(mfccs)
+    mfccs = torch.unsqueeze(mfccs, 0).to(device)
     return mfccs
 
 
 if __name__ == '__main__':
     pa = pyaudio.PyAudio()
-
+    model = FCNModel(input_size=32 * 44, classes=CLASSES).to(device)
+    model.load_state_dict(torch.load('model/complete_FCNModel-180-acc82.7710.pth'))
+    label_lst = os.listdir("wav/train/")
     # 打开音频流
     stream = pa.open(format=FORMAT,
                      channels=CHANNELS,
@@ -45,18 +49,11 @@ if __name__ == '__main__':
             # 读取音频数据
             audio_data = np.frombuffer(stream.read(CHUNK_SIZE), dtype=np.float32)
             mfccs = get_mfcc(audio_data)
-            mfccs = torch.FloatTensor(mfccs)
-            mfccs = torch.unsqueeze(mfccs, 0).to(device)
-            # 输出MFCC
-            # print("MFCCs:")
-            # print(mfccs.shape)
-            model = FCNModel(input_size=32*44, classes=CLASSES).to(device)
-            model.load_state_dict(torch.load('model/FCNModel-140-acc82.4323.pth'))
-            label_lst = os.listdir("wav/train/")
+
             with torch.no_grad():
-                output = model(mfccs)
-                _, predicted = output.max(1)
+                _, predicted = model(mfccs).max(1)
                 print(label_lst[predicted.item()])
+
             # 等待1秒
             time.sleep(DURATION)
 
