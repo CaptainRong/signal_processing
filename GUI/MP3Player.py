@@ -7,11 +7,28 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import os, time
 import configparser
 from random import random
+from Hype import *
+import numpy as np
+import pyaudio
+import threading
+from model import FCNModel
+from resize_test import resize_audio, get_mfcc
 
 
 class MP3Player(QWidget):
     def __init__(self):
         super().__init__()
+
+        # some initial values
+        self.frames = []
+        self.stream = ...
+        self.recording = False
+        self.sr = self.sample_rate = 22050
+        self.model = FCNModel(input_size=32 * 44, classes=CLASSES).to(device)
+        self.model.load_state_dict(torch.load('../model/complete_FCNModel-180-acc82.7710.pth'))
+        torch.no_grad()
+        self.label_lst = os.listdir("../wav/train/")
+
 
         self.startTimeLabel = QLabel('00:00')
         self.endTimeLabel = QLabel('00:00')
@@ -91,7 +108,7 @@ class MP3Player(QWidget):
         self.slider.sliderMoved[int].connect(lambda: self.player.setPosition(self.slider.value()))
         self.PlayModeBtn.clicked.connect(self.playModeSet)
 
-        self.voiceBeginBtn.clicked.connect(self.voiceRcognitionBegin)
+        self.voiceBeginBtn.clicked.connect(self.voiceRcognitionThreadOn)
         self.voiceEndBtn.clicked.connect(self.voice_recognition_end)
 
         self.loadingSetting()
@@ -278,9 +295,44 @@ class MP3Player(QWidget):
             event.ignore()
 
     def voice_recognition_end(self):
-        print(f"录音结束,{self.playMode}")
-        pass
+        self.recording = False
+        print('Loading stream and audio...')
+        (stream, audio) = self.stream
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()
+        print('audio terminated.')
+
+        print(f'frames all get.')
+        audio_data = np.concatenate(self.frames)
+
+        y_resized = resize_audio(audio_data, self.sample_rate*1)
+        mfcc = get_mfcc(y_resized)
+        _, predicted = self.model(mfcc).max(1)
+        print(self.label_lst[predicted.item()])
+
+    def voiceRcognitionThreadOn(self):
+        # set default values
+        print("Recording...")
+        threading._start_new_thread(self.voiceRcognitionBegin, ())
 
     def voiceRcognitionBegin(self):
-        print(f"录音开始{self.playMode}")
+        chunk = 1024
+        format = pyaudio.paFloat32  # 设置数据类型为浮点数
+        channels = 1
+        audio = pyaudio.PyAudio()
+        self.recording = True
+        stream = audio.open(format=format, channels=channels,
+                            rate=self.sample_rate, input=True,
+                            frames_per_buffer=chunk)
+        self.stream = (stream, audio)
+
+
+        frames = []
+        while self.recording:
+            data = stream.read(chunk)
+            frames.append(np.frombuffer(data, dtype=np.float32))  # 将数据转换为浮点数
+            if not self.recording:
+                self.frames = frames
+                print(f"frames uploaded to class successfully,{self.playMode}")
         pass

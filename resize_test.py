@@ -4,6 +4,7 @@ import wave
 import librosa
 import numpy as np
 import pyaudio
+import soundfile
 import soundfile as sf
 
 from Hype import *
@@ -56,7 +57,12 @@ def resize_audio(audio, target_length):
     current_length = len(audio)
     scale = current_length / target_length
     y_resized = librosa.effects.time_stretch(audio, rate=scale)
-    print(y_resized.shape)
+    print('resized as:', y_resized.shape)
+    save_path = '../resized_audio.wav'
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    # 保存调整大小后的音频
+    soundfile.write(save_path, y_resized, 22050)
+    print('DEBUG: OUTPUT SAVE SUCCESSFULLY.')
     return y_resized
 
 
