@@ -73,6 +73,6 @@ if __name__ == '__main__':
                   '(Test) :Loss:%.3f | Access:%.3f%%(%d/%d)' % (test_loss / (BatchTimes + 1), 100. * TP / test_total,
                                                                 TP, test_total))
         if epoch % 20 == 0:
-            torch.save(model.state_dict(), f'model/{model.name}-{epoch}-acc{100 * TP / test_total:0.4f}.pth')
+            torch.save(model.state_dict(), f'model/complete_{model.name}-{epoch}-acc{100 * TP / test_total:0.4f}.pth')
 
     # 验证集的label应该是有问题，导致val_loss越来越高

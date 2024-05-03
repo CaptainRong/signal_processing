@@ -75,7 +75,6 @@ def get_wav_mfcc(wav_path):
 
 def librosa_get_wav_mfcc(wav_path):
     x, sr = librosa.load(wav_path)
-    print(x.shape, sr)
     mfccs = librosa.feature.mfcc(y=x, sr=sr, n_mfcc=32)
     norm = np.linalg.norm(mfccs)
     # mfccs /= norm # 归一
@@ -92,6 +91,6 @@ def librosa_get_wav_mfcc(wav_path):
 
 
 if __name__ == "__main__":
-    # dataset_chk(root_path='wav/', rate=0.3)
+    dataset_chk(root_path='wav/', rate=0.3)
     # # print(data1.shape)
-    mfccs = librosa_get_wav_mfcc(wav_path='wav/test/two/1000.wav')
+    # get_wav_mfcc(wav_path='wav/test/two/1000.wav')
