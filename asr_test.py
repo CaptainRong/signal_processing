@@ -1,3 +1,7 @@
+"""
+Created on 5.3
+@author: <HaMmer，Andcher>
+"""
 import wave
 import numpy as np
 import os
