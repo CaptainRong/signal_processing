@@ -13,6 +13,8 @@ import pyaudio
 import threading
 from model import FCNModel
 from resize_test import resize_audio, get_mfcc
+from refer_dict import refer_dict
+from utils import speak
 
 
 class MP3Player(QWidget):
@@ -28,7 +30,6 @@ class MP3Player(QWidget):
         self.model.load_state_dict(torch.load('../model/complete_FCNModel-180-acc82.7710.pth'))
         torch.no_grad()
         self.label_lst = os.listdir("../wav/train/")
-
 
         self.startTimeLabel = QLabel('00:00')
         self.endTimeLabel = QLabel('00:00')
@@ -294,6 +295,26 @@ class MP3Player(QWidget):
         else:
             event.ignore()
 
+    def command_activate(self, label):
+        print(f"正在执行{label}\n目前的指令有{refer_dict.keys()}")
+        if label in refer_dict.keys():
+            print(f"执行成功")
+            """有点丑陋的逻辑判断，只能说能用就行"""
+            if label == "stop" or label == "on":
+                self.playMusic()
+            elif label == "up":
+                self.nextMusic()
+            elif label == "off":
+                self.prevMusic()
+            """语音合成"""
+            speak(label)
+
+
+
+        else:
+            print(f"无法识别指令，请重新告诉我指令")
+        pass
+
     def voice_recognition_end(self):
         self.recording = False
         print('Loading stream and audio...')
@@ -306,10 +327,13 @@ class MP3Player(QWidget):
         print(f'frames all get.')
         audio_data = np.concatenate(self.frames)
 
-        y_resized = resize_audio(audio_data, self.sample_rate*1)
+        y_resized = resize_audio(audio_data, self.sample_rate * 1)
         mfcc = get_mfcc(y_resized)
         _, predicted = self.model(mfcc).max(1)
-        print(self.label_lst[predicted.item()])
+        result = self.label_lst[predicted.item()]
+        print(f"1111:{result},type:{type(result)}")
+        """执行识别到的指令"""
+        self.command_activate(result)
 
     def voiceRcognitionThreadOn(self):
         # set default values
@@ -326,7 +350,6 @@ class MP3Player(QWidget):
                             rate=self.sample_rate, input=True,
                             frames_per_buffer=chunk)
         self.stream = (stream, audio)
-
 
         frames = []
         while self.recording:

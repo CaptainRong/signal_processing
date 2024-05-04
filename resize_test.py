@@ -57,7 +57,7 @@ def resize_audio(audio, target_length):
     current_length = len(audio)
     scale = current_length / target_length
     y_resized = librosa.effects.time_stretch(audio, rate=scale)
-    print('resized as:', y_resized.shape)
+    print(f'resized as:{y_resized.shape},type:{type(y_resized)}')
     save_path = '../resized_audio.wav'
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     # 保存调整大小后的音频
@@ -69,7 +69,7 @@ def resize_audio(audio, target_length):
 if __name__ == '__main__':
     # 录制1秒钟的音频
     output_filename = 'recorded_audio.wav'
-    duration = 2 # 录制的时长（秒）
+    duration = 2  # 录制的时长（秒）
     sample_rate = 22050  # 采样率
 
     audio_data = record_audio(duration, sample_rate)
