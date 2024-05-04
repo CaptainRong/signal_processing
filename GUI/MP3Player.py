@@ -123,6 +123,7 @@ class MP3Player(QWidget):
         self.setWindowTitle('音乐播放器')
         self.setWindowIcon(QIcon('resource/image/favicon.ico'))
         self.show()
+        self.voiceEndBtn.setEnabled(False)
 
     # 窗口显示居中
     def center(self):
@@ -300,20 +301,28 @@ class MP3Player(QWidget):
         if label in refer_dict.keys():
             print(f"执行成功")
             """有点丑陋的逻辑判断，只能说能用就行"""
-            if label == "stop" or label == "on":
-                self.playMusic()
+            if label == "off":
+                if not self.is_pause:
+                    self.playMusic()
+                else:
+                    label = 'alrdy_off'
+            elif label == "on":
+                if self.is_pause:
+                    self.playMusic()
+                else:
+                    label = 'alrdy_on'
             elif label == "up":
-                self.nextMusic()
-            elif label == "off":
                 self.prevMusic()
+            elif label == "down":
+                self.nextMusic()
             """语音合成"""
             speak(label)
-
-
-
         else:
             print(f"无法识别指令，请重新告诉我指令")
-        pass
+
+        self.voiceBeginBtn.setEnabled(True)
+        self.voiceEndBtn.setEnabled(False)
+
 
     def voice_recognition_end(self):
         self.recording = False
@@ -338,6 +347,8 @@ class MP3Player(QWidget):
     def voiceRcognitionThreadOn(self):
         # set default values
         print("Recording...")
+        self.voiceBeginBtn.setEnabled(False)
+        self.voiceEndBtn.setEnabled(True)
         threading._start_new_thread(self.voiceRcognitionBegin, ())
 
     def voiceRcognitionBegin(self):

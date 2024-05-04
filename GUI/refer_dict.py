@@ -9,15 +9,8 @@
 """
 
 refer_dict = {
-    'stop': '暂停',
+    'off': '暂停',
     'on': '播放',
-    'up': '下一曲',
-    'off': '上一曲',
-}
-refer_command = {
-    'stop': 'playMusic',
-    'on': 'playMusic',
-    'off': 'prevMusic',
-    'up': 'nextMusic',
-
+    'up': '上一曲',
+    'down': '下一曲',
 }
