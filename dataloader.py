@@ -39,11 +39,10 @@ class CustomDataset(Dataset):
 
 
 if __name__ == '__main__':
-    # 假设你的数据是一个大小为N的列表，其中每个元素都是一个axb的浮点np数组
-    data = np.array([[1.3, 1.3], [2.3, 2.3], [3.4, 3.5]])  # 你的数据列表
+
+    data = np.array([[1.3, 1.3], [2.3, 2.3], [3.4, 3.5]])
     N = len(data)
-    # 假设你的标签是一个大小为N的列表，其中每个元素都是一个one-hot编码的列表或数组
-    labels = [1, 0, 1]  # 你的标签列表
+    labels = [1, 0, 1]
 
     # 创建自定义数据集
     custom_dataset = CustomDataset(data, labels, 2, transform=Transform())

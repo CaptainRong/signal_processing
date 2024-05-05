@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset, DataLoader
-from data_process import get_wav_mfcc, librosa_get_wav_mfcc
+from data_process import librosa_get_wav_mfcc
 from dataloader import CustomDataset, Transform
 from Hype import *
 
